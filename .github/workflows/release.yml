@@ -80,7 +80,7 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install app dependencies and build it
-        run: yarn && yarn pubhome
+        run: yarn && yarn tauri build
       - uses: tauri-apps/tauri-action@v0.3
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
