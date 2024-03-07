@@ -6,7 +6,6 @@ import {
   IconMinus,
 } from "@douyinfe/semi-icons";
 import { appWindow } from "@tauri-apps/api/window";
-import { invoke } from "@tauri-apps/api/tauri";
 
 export default class Titlebar extends Component {
   render() {
