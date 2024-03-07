@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "typst-live",
+    "productName": "typster",
     "version": "0.0.0"
   },
   "tauri": {
@@ -30,7 +30,7 @@
       {
         "decorations": true,
         "label": "main",
-        "title": "typst-live",
+        "title": "typster",
         "resizable": true,
         "maximizable": true
       }
