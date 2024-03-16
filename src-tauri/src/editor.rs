@@ -368,9 +368,10 @@ impl EncodeToken {
     }
 }
 
-fn highlight_tree(tokens: &mut Vec<u32>, node: &LinkedNode) {
+fn highlight_tree(tokens: &mut Vec<EncodeToken>, node: &LinkedNode) {
     if let Some(tag) = highlight(node) {
-        tokens.extend(EncodeToken::new(node, tag).encode());
+        // tokens.extend(EncodeToken::new(node, tag).encode());
+        tokens.push(EncodeToken::new(node, tag));
     }
     for child in node.children() {
         highlight_tree(tokens, &child);
@@ -387,41 +388,73 @@ pub fn get_token_legend() -> Vec<String> {
 pub fn tokenize(line: &str) -> Vec<u32> {
     let mut tokens = Vec::new();
     let root = parse(line);
-    println!("{:?}", root);
     highlight_tree(&mut tokens, &LinkedNode::new(&root));
-    for i in (0..tokens.len()).step_by(5) {
-        tokens[i] = 0;
-        let line_number = line[..tokens[i + 1] as usize]
+    let mut extra_tokens: Vec<EncodeToken> = Vec::new();
+    for i in 0..tokens.len() {
+        tokens[i].line = 0;
+        let line_number = line[..tokens[i].start_char as usize]
             .chars()
             .filter(|&c| c == '\n')
             .count();
-        tokens[i] = line_number as u32;
+        tokens[i].line = line_number as u32;
+
+        let inner_string: Vec<&str> = line
+            [tokens[i].start_char as usize..(tokens[i].start_char + tokens[i].length) as usize]
+            .split('\n')
+            .collect();
+
+        // fix multi-line token (like comment, string, etc.)
+        // append the extra token to the end of the token list
+        if inner_string.len() > 1 {
+            for j in 1..inner_string.len() {
+                extra_tokens.push(EncodeToken {
+                    line: line_number as u32 + j as u32,
+                    start_char: 0,
+                    length: inner_string[j].len() as u32,
+                    token_type: tokens[i].token_type,
+                    token_modifiers: tokens[i].token_modifiers,
+                });
+            }
+            tokens[i].length = inner_string[0].len() as u32;
+        }
         // fix start char
         if line_number > 0 {
-            tokens[i + 1] =
-                tokens[i + 1] - line[..tokens[i + 1] as usize].rfind('\n').unwrap() as u32 - 1;
+            tokens[i].start_char = tokens[i].start_char
+                - line[..tokens[i].start_char as usize].rfind('\n').unwrap() as u32
+                - 1;
         }
     }
+
+    tokens.extend(extra_tokens);
+    // sort by line number and start char
+    tokens.sort_by(|a, b| {
+        if a.line == b.line {
+            a.start_char.cmp(&b.start_char)
+        } else {
+            a.line.cmp(&b.line)
+        }
+    });
 
     // get all the tokens line number
-    let lines = tokens.iter().step_by(5).collect::<Vec<_>>();
+    let lines = tokens.iter().map(|t| t.line).collect::<Vec<_>>();
     let diffs: Vec<u32> = lines.windows(2).map(|w| w[1] - w[0]).collect();
     for i in 0..diffs.len() {
-        tokens[(i + 1) * 5] = diffs[i];
+        tokens[i + 1].line = diffs[i];
     }
 
-    let start_chars = tokens.iter().skip(1).step_by(5).collect::<Vec<_>>();
+    let start_chars: Vec<u32> = tokens.iter().map(|t| t.start_char).collect();
     let diffs: Vec<i32> = start_chars
         .windows(2)
-        .map(|w| *w[1] as i32 - *w[0] as i32)
+        .map(|w| w[1] as i32 - w[0] as i32)
         .collect();
+
     for i in 0..diffs.len() {
-        if tokens[(i + 1) * 5] == 0 {
-            tokens[(i + 1) * 5 + 1] = diffs[i] as u32;
+        if tokens[i + 1].line == 0 {
+            tokens[i + 1].start_char = diffs[i] as u32;
         }
     }
 
-    tokens
+    tokens.iter().flat_map(|t| t.encode()).collect()
 }
 
 #[test]
@@ -447,5 +480,5 @@ fn test_highlighting() {
 
     test("#let f(x) = y\n#let g(x) = z");
 
-    test("\\\n\\");
+    test("/* \n comment */");
 }

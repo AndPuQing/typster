@@ -140,18 +140,6 @@ export default function EditorSpace() {
     monaco: any
   ) {
     monacoRef.current = monaco;
-    // _editor.updateOptions({ "semanticHighlighting.enabled": true });
-    // // @ts-ignore
-    // const t = _editor._themeService._theme;
-    // t.semanticHighlighting = true;
-    // t.getTokenStyleMetadata = (type: any, modifiers: any) => {
-    //   console.log("type", type);
-    //   console.log("modifiers", modifiers);
-    //   return {
-    //     fontStyle: "bold",
-    //     foreground: "red",
-    //   };
-    // };
   }
 
   loader.config({
