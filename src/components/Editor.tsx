@@ -20,19 +20,21 @@ class TypstDocumentSemanticTokensProvider
     };
   }
 
-  provideDocumentSemanticTokens(
+  async provideDocumentSemanticTokens(
     model: monaco.editor.ITextModel,
     _lastResultId: string | null,
     _token: monaco.CancellationToken
-  ): monaco.languages.SemanticTokens {
-    invoke("tokenize_tauri", { code: model.getValue() }).then((tokens) => {
-      this._tokens = {
-        resultId: undefined,
-        // @ts-ignore
-        data: new Uint32Array(tokens),
-      };
-      console.log("tokens", this._tokens);
-    });
+  ): Promise<monaco.languages.SemanticTokens> {
+    await invoke("tokenize_tauri", { code: model.getValue() }).then(
+      (tokens) => {
+        this._tokens = {
+          resultId: undefined,
+          // @ts-ignore
+          data: new Uint32Array(tokens),
+        };
+        console.log("tokens", this._tokens);
+      }
+    );
     return this._tokens;
   }
   getLegend(): monaco.languages.SemanticTokensLegend {
@@ -137,9 +139,18 @@ export default function EditorSpace() {
 
   function handleEditorDidMount(
     _editor: monaco.editor.IStandaloneCodeEditor,
-    monaco: any
+    monacoinstance: Monaco
   ) {
-    monacoRef.current = monaco;
+    // @ts-ignore
+    monacoRef.current = monacoinstance;
+
+    _editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Equal, () => {
+      _editor.trigger("", "editor.action.fontZoomIn", null as any);
+    });
+
+    _editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Minus, () => {
+      _editor.trigger("", "editor.action.fontZoomOut", null as any);
+    });
   }
 
   loader.config({
