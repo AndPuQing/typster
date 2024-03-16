@@ -1,6 +1,6 @@
 {
   "productName": "typster",
-  "version": "0.0.0",
+  "version": "0.0.6",
   "identifier": "com.typster.dev",
   "build": {
     "beforeDevCommand": "yarn dev",
