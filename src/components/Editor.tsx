@@ -1,71 +1,51 @@
-import { Monaco, loader } from "@monaco-editor/react";
-import Editor from "@monaco-editor/react";
-import { useRef } from "react";
+import { Editor, Monaco, loader } from "@monaco-editor/react";
+import { useEffect, useRef } from "react";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { invoke } from "@tauri-apps/api/core";
 
-class TypstState implements monaco.languages.IState {
-  clone(): monaco.languages.IState {
-    return new TypstState();
+class TypstDocumentSemanticTokensProvider
+  implements monaco.languages.DocumentSemanticTokensProvider
+{
+  private _legend: monaco.languages.SemanticTokensLegend;
+  private _tokens: monaco.languages.SemanticTokens;
+
+  constructor() {
+    this._legend = {
+      tokenTypes: [],
+      tokenModifiers: [],
+    };
+    this._tokens = {
+      resultId: "",
+      data: new Uint32Array(),
+    };
   }
 
-  equals(_other: monaco.languages.IState): boolean {
-    return true;
+  provideDocumentSemanticTokens(
+    model: monaco.editor.ITextModel,
+    lastResultId: string | null,
+    token: monaco.CancellationToken
+  ): monaco.languages.SemanticTokens {
+    invoke("tokenize_tauri", { code: model.getValue() }).then((tokens) => {
+      this._tokens = {
+        resultId: undefined,
+        // @ts-ignore
+        data: new Uint32Array(tokens),
+      };
+      console.log("tokens", this._tokens);
+    });
+    return this._tokens;
   }
+  getLegend(): monaco.languages.SemanticTokensLegend {
+    invoke("get_legend").then((legend) => {
+      console.log("legend", legend);
+      // @ts-ignore
+      this._legend.tokenTypes = legend;
+    });
+    return this._legend;
+  }
+
+  releaseDocumentSemanticTokens(resultId: string | undefined): void {}
 }
-
-class TypstToken implements monaco.languages.IToken {
-  scopes: string;
-  startIndex: number;
-  constructor(ruleName: String, startIndex: number) {
-    this.scopes = ruleName.toLowerCase();
-    this.startIndex = startIndex;
-  }
-}
-
-class TypstLineTokens implements monaco.languages.ILineTokens {
-  endState: monaco.languages.IState;
-  tokens: monaco.languages.IToken[];
-  constructor(tokens: monaco.languages.IToken[]) {
-    this.endState = new TypstState();
-    this.tokens = tokens;
-  }
-}
-
-// class TypstTokensProvider implements monaco.languages.TokensProvider {
-//   private _tokens: monaco.languages.IToken[];
-
-//   constructor() {
-//     this._tokens = [];
-//   }
-
-//   getInitialState(): monaco.languages.IState {
-//     return new TypstState();
-//   }
-
-//   tokensForLine(input: string): monaco.languages.ILineTokens {
-//     if (input === "") {
-//       return new TypstLineTokens([]);
-//     }
-//     let myTokens: monaco.languages.IToken[] = [];
-
-//     invoke("tokenize_code", { code: input }).then((tokens) => {
-//       // @ts-ignore
-//       tokens.forEach((token) => {
-//         myTokens.push(new TypstToken(token.type_, token.start_id));
-//       });
-//       this._tokens = myTokens;
-//     });
-//     return new TypstLineTokens(this._tokens);
-//   }
-
-//   tokenize(
-//     line: string,
-//     state: monaco.languages.IState
-//   ): monaco.languages.ILineTokens {
-//     return this.tokensForLine(line);
-//   }
-// }
 
 export default function EditorSpace() {
   const monacoRef = useRef(null);
@@ -103,41 +83,20 @@ export default function EditorSpace() {
       ],
     });
 
-    monacoinstance.languages.registerDocumentSemanticTokensProvider("typst", {
-      provideDocumentSemanticTokens(
-        model: monaco.editor.ITextModel,
-        lastResultId,
-        token
-      ) {
-        invoke("tokenize_code", { code: model.getValue() }).then((tokens) => {
-          console.log("tokens", tokens);
-        });
-        return {
-          resultId: "",
-          data: new Uint32Array(),
-        };
-      },
-      getLegend: function (): monaco.languages.SemanticTokensLegend {
-        return {
-          tokenTypes: ["adsf"],
-          tokenModifiers: [""],
-        };
-      },
-      releaseDocumentSemanticTokens: function (
-        resultId: string | undefined
-      ): void {
-        throw new Error("Function not implemented.");
-      },
-    });
+    monacoinstance.languages.registerDocumentSemanticTokensProvider(
+      "typst",
+      new TypstDocumentSemanticTokensProvider()
+    );
 
     // Define a new theme that contains only rules that match this language
     monacoinstance.editor.defineTheme("myCoolTheme", {
       base: "vs",
-      inherit: false,
+      inherit: true,
+      colors: {},
       rules: [
         { token: "comment.typst", foreground: "#a6b5b8" },
         { token: "punctuation.typst", fontStyle: "#a6b5b8" },
-        { token: "constant.character.escape.typst", foreground: "#FFA500" },
+        { token: "constant.character.escape.typst", foreground: "#1d6c76" },
         {
           token: "markup.bold.typst",
           foreground: "#000000",
@@ -154,28 +113,25 @@ export default function EditorSpace() {
           fontStyle: "underline",
         },
         { token: "markup.raw.typst", foreground: "#000000" },
-        { token: "punctuation.definition.math.typst", foreground: "#18ac31" },
+        { token: "punctuation.definition.math.typst", foreground: "#2a8f10" },
         { token: "keyword.operator.math.typst", foreground: "#000000" },
         {
           token: "markup.heading.typst",
           foreground: "#000000",
-          fontStyle: "bold",
+          fontStyle: "bold underline",
         },
-        { token: "punctuation.definition.list.typst", foreground: "#ed4a76" },
+        { token: "punctuation.definition.list.typst", foreground: "#8b41b1" },
         { token: "markup.list.term.typst", foreground: "#000000" },
-        { token: "entity.name.label.typst", foreground: "#000000" },
-        { token: "markup.other.reference.typst", foreground: "#000000" },
-        { token: "keyword.typst", foreground: "#9244ec" },
+        { token: "entity.name.label.typst", foreground: "#1d6c76" },
+        { token: "markup.other.reference.typst", foreground: "#1d6c76" },
+        { token: "keyword.typst", foreground: "#e03a49" },
         { token: "keyword.operator.typst", foreground: "#a6b5b8" },
-        { token: "constant.numeric.typst", foreground: "#000000" },
-        { token: "string.quoted.double.typst", foreground: "#000000" },
-        { token: "entity.name.function.typst", foreground: "#00afc2" },
-        { token: "meta.interpolation.typst", foreground: "#000000" },
+        { token: "constant.numeric.typst", foreground: "#b30e58" },
+        { token: "string.quoted.double.typst", foreground: "#2a8f10" },
+        { token: "entity.name.function.typst", foreground: "#4b69c6" },
+        { token: "meta.interpolation.typst", foreground: "#8b41b1" },
         { token: "invalid.typst", foreground: "#ff0000" },
       ],
-      colors: {
-        "editor.foreground": "#000000",
-      },
     });
   }
 
@@ -184,7 +140,18 @@ export default function EditorSpace() {
     monaco: any
   ) {
     monacoRef.current = monaco;
-    _editor.updateOptions({ "semanticHighlighting.enabled": true });
+    // _editor.updateOptions({ "semanticHighlighting.enabled": true });
+    // // @ts-ignore
+    // const t = _editor._themeService._theme;
+    // t.semanticHighlighting = true;
+    // t.getTokenStyleMetadata = (type: any, modifiers: any) => {
+    //   console.log("type", type);
+    //   console.log("modifiers", modifiers);
+    //   return {
+    //     fontStyle: "bold",
+    //     foreground: "red",
+    //   };
+    // };
   }
 
   loader.config({
@@ -192,6 +159,7 @@ export default function EditorSpace() {
       vs: "node_modules/monaco-editor/min/vs",
     },
   });
+
   return (
     <Editor
       height="90vh"
@@ -200,6 +168,9 @@ export default function EditorSpace() {
       theme="myCoolTheme"
       beforeMount={handleEditorWillMount}
       onMount={handleEditorDidMount}
+      options={{
+        "semanticHighlighting.enabled": true,
+      }}
     />
   );
 }

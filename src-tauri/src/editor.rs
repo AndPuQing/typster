@@ -271,26 +271,26 @@ fn highlight(node: &LinkedNode) -> Option<Tag> {
         SyntaxKind::Arrow => Some(Tag::Operator),
         SyntaxKind::Root => Some(Tag::MathOperator),
 
-        SyntaxKind::Not => Some(Tag::Keyword),
-        SyntaxKind::And => Some(Tag::Keyword),
-        SyntaxKind::Or => Some(Tag::Keyword),
-        SyntaxKind::None => Some(Tag::Keyword),
-        SyntaxKind::Auto => Some(Tag::Keyword),
-        SyntaxKind::Let => Some(Tag::Keyword),
-        SyntaxKind::Set => Some(Tag::Keyword),
-        SyntaxKind::Show => Some(Tag::Keyword),
-        SyntaxKind::Context => Some(Tag::Keyword),
-        SyntaxKind::If => Some(Tag::Keyword),
-        SyntaxKind::Else => Some(Tag::Keyword),
-        SyntaxKind::For => Some(Tag::Keyword),
-        SyntaxKind::In => Some(Tag::Keyword),
-        SyntaxKind::While => Some(Tag::Keyword),
-        SyntaxKind::Break => Some(Tag::Keyword),
-        SyntaxKind::Continue => Some(Tag::Keyword),
-        SyntaxKind::Return => Some(Tag::Keyword),
-        SyntaxKind::Import => Some(Tag::Keyword),
-        SyntaxKind::Include => Some(Tag::Keyword),
-        SyntaxKind::As => Some(Tag::Keyword),
+        SyntaxKind::Not
+        | SyntaxKind::And
+        | SyntaxKind::Or
+        | SyntaxKind::None
+        | SyntaxKind::Auto
+        | SyntaxKind::Let
+        | SyntaxKind::Set
+        | SyntaxKind::Show
+        | SyntaxKind::Context
+        | SyntaxKind::If
+        | SyntaxKind::Else
+        | SyntaxKind::For
+        | SyntaxKind::In
+        | SyntaxKind::While
+        | SyntaxKind::Break
+        | SyntaxKind::Continue
+        | SyntaxKind::Return
+        | SyntaxKind::Import
+        | SyntaxKind::Include
+        | SyntaxKind::As => Some(Tag::Keyword),
 
         SyntaxKind::Code => None,
         SyntaxKind::Ident => highlight_ident(node),
@@ -377,45 +377,47 @@ fn highlight_tree(tokens: &mut Vec<u32>, node: &LinkedNode) {
     }
 }
 
-fn get_line_number(source_text: &str, node: Vec<u32>) -> u32 {
-    let start = node[1] as usize;
-    let end = start + node[2] as usize;
-    let mut line = 0;
-    for (i, c) in source_text.chars().enumerate() {
-        if i == end {
-            break;
-        }
-        if c == '\n' {
-            line += 1;
-        }
-    }
-    line
+pub fn get_token_legend() -> Vec<String> {
+    Tag::LIST
+        .iter()
+        .map(|tag| tag.tm_scope().to_string())
+        .collect()
 }
 
 pub fn tokenize(line: &str) -> Vec<u32> {
     let mut tokens = Vec::new();
     let root = parse(line);
     println!("{:?}", root);
-    // Find all the Space tokens in the tree
     highlight_tree(&mut tokens, &LinkedNode::new(&root));
-
-    // from the soucre code to get the line number
     for i in (0..tokens.len()).step_by(5) {
-        tokens[i] = get_line_number(line, tokens[i..i + 5].to_vec());
+        tokens[i] = 0;
+        let line_number = line[..tokens[i + 1] as usize]
+            .chars()
+            .filter(|&c| c == '\n')
+            .count();
+        tokens[i] = line_number as u32;
+        // fix start char
+        if line_number > 0 {
+            tokens[i + 1] =
+                tokens[i + 1] - line[..tokens[i + 1] as usize].rfind('\n').unwrap() as u32 - 1;
+        }
     }
+
     // get all the tokens line number
     let lines = tokens.iter().step_by(5).collect::<Vec<_>>();
-
     let diffs: Vec<u32> = lines.windows(2).map(|w| w[1] - w[0]).collect();
-
-    for i in 1..diffs.len() {
-        tokens[i * 5] = diffs[i - 1];
+    for i in 0..diffs.len() {
+        tokens[(i + 1) * 5] = diffs[i];
     }
 
-    // from the same line also use delta to place
-    for i in (5..tokens.len()).step_by(5) {
-        if tokens[i] == 0 {
-            tokens[i + 1] = tokens[i + 1] - tokens[i - 4];
+    let start_chars = tokens.iter().skip(1).step_by(5).collect::<Vec<_>>();
+    let diffs: Vec<i32> = start_chars
+        .windows(2)
+        .map(|w| *w[1] as i32 - *w[0] as i32)
+        .collect();
+    for i in 0..diffs.len() {
+        if tokens[(i + 1) * 5] == 0 {
+            tokens[(i + 1) * 5 + 1] = diffs[i] as u32;
         }
     }
 
@@ -427,10 +429,23 @@ fn test_highlighting() {
     #[track_caller]
     fn test(text: &str) {
         let tokens = tokenize(text);
-        println!("{:?}", tokens);
+        for i in (0..tokens.len()).step_by(5) {
+            println!(
+                "{:?} {:?} {:?} {:?} {:?}",
+                tokens[i],
+                tokens[i + 1],
+                tokens[i + 2],
+                tokens[i + 3],
+                tokens[i + 4]
+            );
+        }
     }
 
-    test("#let f(x) = x");
+    // test("#let f(x) = x");
 
-    test("#let f(x) = y");
+    // test("#let f(x) = y");
+
+    test("#let f(x) = y\n#let g(x) = z");
+
+    test("\\\n\\");
 }
