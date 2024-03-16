@@ -1,5 +1,5 @@
 import { Editor, Monaco, loader } from "@monaco-editor/react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -22,8 +22,8 @@ class TypstDocumentSemanticTokensProvider
 
   provideDocumentSemanticTokens(
     model: monaco.editor.ITextModel,
-    lastResultId: string | null,
-    token: monaco.CancellationToken
+    _lastResultId: string | null,
+    _token: monaco.CancellationToken
   ): monaco.languages.SemanticTokens {
     invoke("tokenize_tauri", { code: model.getValue() }).then((tokens) => {
       this._tokens = {
@@ -44,7 +44,7 @@ class TypstDocumentSemanticTokensProvider
     return this._legend;
   }
 
-  releaseDocumentSemanticTokens(resultId: string | undefined): void {}
+  releaseDocumentSemanticTokens(_resultId: string | undefined): void {}
 }
 
 export default function EditorSpace() {

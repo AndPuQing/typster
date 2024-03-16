@@ -3,11 +3,7 @@ import {
   User,
   Listbox,
   ListboxItem,
-  Tabs,
   ListboxSection,
-  Tab,
-  Card,
-  CardBody,
   NextUIProvider,
 } from "@nextui-org/react";
 import { useState } from "react";
@@ -44,7 +40,6 @@ function WorkspaceItem({ workspace }: { workspace: Workspace }) {
 export default function App() {
   // slide bar
   const [show_slide_bar, setShowSlideBar] = useState(true);
-  const [selected, setSelected] = useState("photos");
   const navigate = useNavigate();
   return (
     <NextUIProvider navigate={navigate}>
