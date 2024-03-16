@@ -47,14 +47,7 @@ export default function App() {
         {
           /* slide bar */
           show_slide_bar && (
-            <div className="w-64 h-full pt-2 px-4 flex flex-col gap-4">
-              <Button
-                className="bg-transparent hover:bg-gray-100"
-                onClick={() => setShowSlideBar(false)}
-                isIconOnly
-              >
-                <IconSidebar />
-              </Button>
+            <div className="w-64 h-full pt-14 px-4 flex flex-col gap-4">
               <div className="grid gap-4">
                 <div className="hover:bg-gray-100 rounded-lg pt-2 pb-1 px-2 items-center">
                   <User
@@ -102,15 +95,6 @@ export default function App() {
         {/* main content */}
         <div className="w-full flex-1 flex-col">
           <main className="h-full w-full overflow-visible pt-2 px-4 flex flex-col">
-            {!show_slide_bar && (
-              <Button
-                className="bg-transparent hover:bg-gray-100 absolute left-4"
-                onClick={() => setShowSlideBar(true)}
-                isIconOnly
-              >
-                <IconSidebar />
-              </Button>
-            )}
             {/* <Tabs
               aria-label="Options"
               selectedKey={selected}
@@ -131,6 +115,13 @@ export default function App() {
             </Tabs> */}
             <EditorSpace />
           </main>
+          <Button
+            className="bg-transparent hover:bg-gray-100 absolute left-4 top-2"
+            onClick={() => setShowSlideBar(!show_slide_bar)}
+            isIconOnly
+          >
+            <IconSidebar />
+          </Button>
         </div>
       </div>
     </NextUIProvider>
