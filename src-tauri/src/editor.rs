@@ -457,6 +457,8 @@ pub fn tokenize(line: &str) -> Vec<u32> {
     tokens.iter().flat_map(|t| t.encode()).collect()
 }
 
+
+
 #[test]
 fn test_highlighting() {
     #[track_caller]
