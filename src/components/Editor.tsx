@@ -124,7 +124,7 @@ export default function EditorSpace({ file }: EditorProps) {
       const changeModel = async () => {
         let text = await readTextFile(file, {
           baseDir: BaseDirectory.AppData,
-        }).then((res) => res);
+        });
         if (monacoInstance) {
           const url: monaco.Uri = monacoInstance.Uri.file(file);
           if (monacoInstance?.editor.getModel(url)) {
@@ -138,11 +138,13 @@ export default function EditorSpace({ file }: EditorProps) {
     }
   }, [file]);
 
-  loader.config({
-    paths: {
-      vs: "node_modules/monaco-editor/min/vs",
-    },
-  });
+  useEffect(() => {
+    loader.config({
+      paths: {
+        vs: "node_modules/monaco-editor/min/vs",
+      },
+    });
+  }, []);
 
   return (
     <Editor
