@@ -1,56 +1,17 @@
 import { Editor, Monaco, loader } from "@monaco-editor/react";
 import { useRef } from "react";
+import { TypstDocumentSemanticTokensProvider } from "../language";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import { invoke } from "@tauri-apps/api/core";
 
-class TypstDocumentSemanticTokensProvider
-  implements monaco.languages.DocumentSemanticTokensProvider
-{
-  private _legend: monaco.languages.SemanticTokensLegend;
-  private _tokens: monaco.languages.SemanticTokens;
+type EditorProps = {
+  absolutePath: string;
+  defaultOpenFile: string | null;
+};
 
-  constructor() {
-    this._legend = {
-      tokenTypes: [],
-      tokenModifiers: [],
-    };
-    this._tokens = {
-      resultId: "",
-      data: new Uint32Array(),
-    };
-  }
-
-  async provideDocumentSemanticTokens(
-    model: monaco.editor.ITextModel,
-    _lastResultId: string | null,
-    _token: monaco.CancellationToken
-  ): Promise<monaco.languages.SemanticTokens> {
-    await invoke("tokenize_tauri", { code: model.getValue() }).then(
-      (tokens) => {
-        this._tokens = {
-          resultId: undefined,
-          // @ts-ignore
-          data: new Uint32Array(tokens),
-        };
-        console.log("tokens", this._tokens);
-      }
-    );
-    return this._tokens;
-  }
-  getLegend(): monaco.languages.SemanticTokensLegend {
-    invoke("get_legend").then((legend) => {
-      console.log("legend", legend);
-      // @ts-ignore
-      this._legend.tokenTypes = legend;
-    });
-    return this._legend;
-  }
-
-  releaseDocumentSemanticTokens(_resultId: string | undefined): void {}
-}
-
-export default function EditorSpace() {
+export default function EditorSpace(props: EditorProps) {
   const monacoRef = useRef(null);
+  const editorRef: React.RefObject<monaco.editor.IStandaloneCodeEditor> =
+    useRef(null);
 
   function handleEditorWillMount(monacoinstance: Monaco) {
     monacoinstance.languages.register({ id: "typst", extensions: [".typ"] });
@@ -143,6 +104,8 @@ export default function EditorSpace() {
   ) {
     // @ts-ignore
     monacoRef.current = monacoinstance;
+    // @ts-ignore
+    editorRef.current = _editor;
 
     _editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Equal, () => {
       _editor.trigger("", "editor.action.fontZoomIn", null as any);
@@ -151,6 +114,14 @@ export default function EditorSpace() {
     _editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Minus, () => {
       _editor.trigger("", "editor.action.fontZoomOut", null as any);
     });
+  }
+
+  function handleEditorChange(
+    value: string | undefined,
+    ev: monaco.editor.IModelContentChangedEvent
+  ) {
+    if (monacoRef.current) {
+    }
   }
 
   loader.config({
@@ -170,6 +141,7 @@ export default function EditorSpace() {
       options={{
         "semanticHighlighting.enabled": true,
       }}
+      onChange={handleEditorChange}
     />
   );
 }

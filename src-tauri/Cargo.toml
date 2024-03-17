@@ -20,6 +20,9 @@ typst-syntax = "0.10.0"
 
 typst-ts-core = { version = "0.4.2-rc8", default-features = false }
 typst-ts-compiler = { version = "0.4.2-rc8", features = ["system"] }
+log = "0.4.21"
+env_logger = "0.11.3"
+tauri-plugin-fs = "2.0.0-beta.2"
 
 [patch.crates-io]
 typst-ts-compiler = { git = "https://github.com/Myriad-Dreamin/typst.ts.git" }

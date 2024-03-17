@@ -1,9 +1,6 @@
-use serde::Deserialize;
-use serde::Serialize;
-use typst_syntax::ast;
-use typst_syntax::parse;
-use typst_syntax::LinkedNode;
-use typst_syntax::SyntaxKind;
+use log::{debug, info};
+use serde::{Deserialize, Serialize};
+use typst_syntax::{ast, parse, LinkedNode, SyntaxKind};
 
 /// A syntax highlighting tag.
 /// Copy from typst_syntax::highlight module
@@ -388,6 +385,9 @@ pub fn get_token_legend() -> Vec<String> {
 pub fn tokenize(line: &str) -> Vec<u32> {
     let mut tokens = Vec::new();
     let root = parse(line);
+
+    debug!("Printing the syntax tree\n{:#?}", root);
+
     highlight_tree(&mut tokens, &LinkedNode::new(&root));
     let mut extra_tokens: Vec<EncodeToken> = Vec::new();
     for i in 0..tokens.len() {
@@ -406,15 +406,16 @@ pub fn tokenize(line: &str) -> Vec<u32> {
         // fix multi-line token (like comment, string, etc.)
         // append the extra token to the end of the token list
         if inner_string.len() > 1 {
-            for j in 1..inner_string.len() {
-                extra_tokens.push(EncodeToken {
+            info!("multi-line token: {:?}", inner_string);
+            extra_tokens.extend(inner_string.iter().skip(1).enumerate().map(|(j, s)| {
+                EncodeToken {
                     line: line_number as u32 + j as u32,
                     start_char: 0,
-                    length: inner_string[j].len() as u32,
+                    length: s.len() as u32,
                     token_type: tokens[i].token_type,
                     token_modifiers: tokens[i].token_modifiers,
-                });
-            }
+                }
+            }));
             tokens[i].length = inner_string[0].len() as u32;
         }
         // fix start char
@@ -457,16 +458,12 @@ pub fn tokenize(line: &str) -> Vec<u32> {
     tokens.iter().flat_map(|t| t.encode()).collect()
 }
 
-
-
 #[test]
 fn test_highlighting() {
-    #[track_caller]
-    fn test(text: &str) {
-        let tokens = tokenize(text);
+    fn print_tokens(tokens: Vec<u32>) {
         for i in (0..tokens.len()).step_by(5) {
             println!(
-                "{:?} {:?} {:?} {:?} {:?}",
+                "line: {}, start_char: {}, length: {}, token_type: {}, token_modifiers: {}",
                 tokens[i],
                 tokens[i + 1],
                 tokens[i + 2],
@@ -476,9 +473,15 @@ fn test_highlighting() {
         }
     }
 
-    // test("#let f(x) = x");
+    #[track_caller]
+    fn test(text: &str) {
+        let tokens = tokenize(text);
+        print_tokens(tokens);
+    }
 
-    // test("#let f(x) = y");
+    test("#let f(x) = x");
+
+    test("#let f(x) = y");
 
     test("#let f(x) = y\n#let g(x) = z");
 

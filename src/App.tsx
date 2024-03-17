@@ -17,6 +17,10 @@ import {
 import { Divider } from "@nextui-org/react";
 import { useNavigate } from "react-router-dom";
 import EditorSpace from "./components/Editor";
+import { Tree } from "@douyinfe/semi-ui";
+import { documentDir, appDataDir, desktopDir } from "@tauri-apps/api/path";
+
+import { readDir, BaseDirectory } from "@tauri-apps/plugin-fs";
 
 enum WorkspaceType {
   LOCAL = "Local",
@@ -37,60 +41,91 @@ function WorkspaceItem({ workspace }: { workspace: Workspace }) {
   );
 }
 
+export interface Project {
+  absolutePath: string;
+  defaultOpenFile: string | null;
+}
+
 export default function App() {
   // slide bar
   const [show_slide_bar, setShowSlideBar] = useState(true);
   const navigate = useNavigate();
+
+  const tempProject: Project = {
+    absolutePath: "/home/happy/Documents/typster",
+    defaultOpenFile: null,
+  };
+
+  const readDirAsync = async () => {
+    const dir = await desktopDir();
+    console.log(dir);
+  };
+  readDirAsync();
+
+  const treeData = [
+    {
+      label: "Asia",
+      value: "Asia",
+      key: "0",
+      children: [
+        {
+          label: "China",
+          value: "China",
+          key: "0-0",
+          children: [
+            {
+              label: "Beijing",
+              value: "Beijing",
+              key: "0-0-0",
+            },
+            {
+              label: "Shanghai",
+              value: "Shanghai",
+              key: "0-0-1",
+            },
+          ],
+        },
+        {
+          label: "Japan",
+          value: "Japan",
+          key: "0-1",
+          children: [
+            {
+              label: "Osaka",
+              value: "Osaka",
+              key: "0-1-0",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      label: "North America",
+      value: "North America",
+      key: "1",
+      children: [
+        {
+          label: "United States",
+          value: "United States",
+          key: "1-0",
+        },
+        {
+          label: "Canada",
+          value: "Canada",
+          key: "1-1",
+        },
+      ],
+    },
+  ];
   return (
     <NextUIProvider navigate={navigate}>
       <div className="flex h-screen">
-        {
-          /* slide bar */
-          show_slide_bar && (
-            <div className="w-64 h-full pt-14 px-4 flex flex-col gap-4">
-              <div className="grid gap-4">
-                <div className="hover:bg-gray-100 rounded-lg pt-2 pb-1 px-2 items-center">
-                  <User
-                    name="Demo Workspace"
-                    description={
-                      <WorkspaceItem
-                        workspace={{
-                          name: "Local",
-                          type: WorkspaceType.LOCAL,
-                        }}
-                      />
-                    }
-                    avatarProps={{
-                      src: "https://i.pravatar.cc/150?u=a04258114e29026702d",
-                    }}
-                  />
-                </div>
+        {show_slide_bar && (
+          <div className="w-64 h-full pt-14 px-4 flex flex-col gap-4">
+            <Tree treeData={treeData} directory />
+          </div>
+        )}
 
-                <Listbox
-                  aria-label="Actions"
-                  onAction={(key) => alert(key)}
-                  variant="solid"
-                  className="p-0 gap-1"
-                  itemClasses={{
-                    base: "pl-2 rounded-lg h-10 data-[hover=true]:bg-default-100/80",
-                  }}
-                >
-                  <ListboxItem key="allproject" startContent={<IconFile />}>
-                    All Project
-                  </ListboxItem>
-                  <ListboxItem key="setting" startContent={<IconSetting />}>
-                    Setting
-                  </ListboxItem>
-                  <ListboxSection title="Favorites">
-                    <ListboxItem key="setting" startContent={<IconSetting />}>
-                      Setting
-                    </ListboxItem>
-                  </ListboxSection>
-                </Listbox>
-              </div>
-            </div>
-          )
-        }
         <Divider orientation="vertical" />
         {/* main content */}
         <div className="w-full flex-1 flex-col">
@@ -113,7 +148,7 @@ export default function App() {
               </Tab>
               <Tab key="music" title="Favorites"></Tab>
             </Tabs> */}
-            <EditorSpace />
+            <EditorSpace {...tempProject} />
           </main>
           <Button
             className="bg-transparent hover:bg-gray-100 absolute left-4 top-2"
