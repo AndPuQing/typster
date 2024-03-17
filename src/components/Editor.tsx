@@ -1,17 +1,17 @@
-import { Editor, Monaco, loader } from "@monaco-editor/react";
-import { useRef } from "react";
+import { Editor, Monaco, loader, useMonaco } from "@monaco-editor/react";
+import { useEffect, useRef } from "react";
 import { TypstDocumentSemanticTokensProvider } from "../language";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+import { BaseDirectory, readTextFile } from "@tauri-apps/plugin-fs";
 
 type EditorProps = {
-  absolutePath: string;
-  defaultOpenFile: string | null;
+  file: string;
 };
 
-export default function EditorSpace(props: EditorProps) {
-  const monacoRef = useRef(null);
+export default function EditorSpace({ file }: EditorProps) {
   const editorRef: React.RefObject<monaco.editor.IStandaloneCodeEditor> =
     useRef(null);
+  const monacoInstance = useMonaco();
 
   function handleEditorWillMount(monacoinstance: Monaco) {
     monacoinstance.languages.register({ id: "typst", extensions: [".typ"] });
@@ -100,10 +100,8 @@ export default function EditorSpace(props: EditorProps) {
 
   function handleEditorDidMount(
     _editor: monaco.editor.IStandaloneCodeEditor,
-    monacoinstance: Monaco
+    _monacoinstance: Monaco
   ) {
-    // @ts-ignore
-    monacoRef.current = monacoinstance;
     // @ts-ignore
     editorRef.current = _editor;
 
@@ -119,10 +117,26 @@ export default function EditorSpace(props: EditorProps) {
   function handleEditorChange(
     value: string | undefined,
     ev: monaco.editor.IModelContentChangedEvent
-  ) {
-    if (monacoRef.current) {
+  ) {}
+
+  useEffect(() => {
+    if (editorRef.current) {
+      const changeModel = async () => {
+        let text = await readTextFile(file, {
+          baseDir: BaseDirectory.AppData,
+        }).then((res) => res);
+        if (monacoInstance) {
+          const url: monaco.Uri = monacoInstance.Uri.file(file);
+          if (monacoInstance?.editor.getModel(url)) {
+            monacoInstance?.editor.getModel(url)?.dispose();
+          }
+          monacoInstance?.editor.createModel(text, "typst", url);
+          editorRef.current?.setModel(monacoInstance?.editor.getModel(url));
+        }
+      };
+      changeModel();
     }
-  }
+  }, [file]);
 
   loader.config({
     paths: {
@@ -134,7 +148,6 @@ export default function EditorSpace(props: EditorProps) {
     <Editor
       height="90vh"
       defaultLanguage="typst"
-      defaultValue=""
       theme="myCoolTheme"
       beforeMount={handleEditorWillMount}
       onMount={handleEditorDidMount}

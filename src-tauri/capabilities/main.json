@@ -22,16 +22,13 @@
     "menu:default",
     "tray:default",
     "shell:allow-open",
-    "fs:allow-read-file",
-    "fs:allow-write-file",
-    "fs:allow-read-dir",
-    "fs:allow-copy-file",
-    "fs:allow-mkdir",
-    "fs:allow-remove",
-    "fs:allow-remove",
-    "fs:allow-rename",
-    "fs:allow-exists",
-    "fs:read-all",
-    "fs:write-all"
+    "fs:scope-appdata",
+    "fs:scope-appdata-index",
+    "fs:allow-appdata-write",
+    "fs:allow-appdata-write-recursive",
+    "fs:allow-appdata-meta-recursive",
+    "fs:allow-appdata-read-recursive",
+    "fs:scope-appdata-recursive",
+    "fs:allow-exists"
   ]
 }

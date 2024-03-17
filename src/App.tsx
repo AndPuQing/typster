@@ -6,21 +6,30 @@ import {
   ListboxSection,
   NextUIProvider,
 } from "@nextui-org/react";
-import { useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import {
   IconSidebar,
   IconServer,
   IconGlobe,
   IconFile,
   IconSetting,
+  IconFolder,
 } from "@douyinfe/semi-icons";
 import { Divider } from "@nextui-org/react";
 import { useNavigate } from "react-router-dom";
 import EditorSpace from "./components/Editor";
 import { Tree } from "@douyinfe/semi-ui";
-import { documentDir, appDataDir, desktopDir } from "@tauri-apps/api/path";
-
-import { readDir, BaseDirectory } from "@tauri-apps/plugin-fs";
+import { TreeNodeData } from "@douyinfe/semi-ui/lib/es/tree";
+import { appDataDir } from "@tauri-apps/api/path";
+import {
+  BaseDirectory,
+  writeFile,
+  writeTextFile,
+  exists,
+  create,
+  mkdir,
+  readDir,
+} from "@tauri-apps/plugin-fs";
 
 enum WorkspaceType {
   LOCAL = "Local",
@@ -41,88 +50,89 @@ function WorkspaceItem({ workspace }: { workspace: Workspace }) {
   );
 }
 
-export interface Project {
-  absolutePath: string;
-  defaultOpenFile: string | null;
+class ProjectTree implements TreeNodeData {
+  label: string;
+  key?: string | undefined;
+  children?: ProjectTree[];
+  icon?: ReactNode;
+  isDirectory?: boolean;
+  absolutePath?: string;
+  constructor(label: string, isDirectory = false, absolutePath?: string) {
+    this.label = label;
+    this.key = label;
+    this.icon = isDirectory ? <IconFolder /> : <IconFile />;
+    this.isDirectory = isDirectory;
+    this.absolutePath = absolutePath;
+  }
 }
 
 export default function App() {
   // slide bar
   const [show_slide_bar, setShowSlideBar] = useState(true);
+  const [projectDirTree, setProjectDirTree] = useState<TreeNodeData[]>();
+  const [currentFile, setCurrentFile] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
-  const tempProject: Project = {
-    absolutePath: "/home/happy/Documents/typster",
-    defaultOpenFile: null,
+  useEffect(() => {
+    createDefaultProject();
+  }, []);
+
+  async function processEntriesRecursive(parent: any, entries: any) {
+    for (const entry of entries) {
+      if (entry.isDirectory) {
+        const child = new ProjectTree(entry.name, true);
+        parent.children = parent.children || [];
+        parent.children.push(child);
+        processEntriesRecursive(
+          child,
+          await readDir(parent.label + "/" + entry.name, {
+            baseDir: BaseDirectory.AppData,
+          })
+        );
+      } else {
+        const child = new ProjectTree(entry.name);
+        child.absolutePath = parent.label + "/" + entry.name;
+        parent.children = parent.children || [];
+        parent.children.push(child);
+      }
+    }
+  }
+
+  const createDefaultProject = async () => {
+    const exist = await exists("default", { baseDir: BaseDirectory.AppData });
+    if (!exist) {
+      await mkdir("default", {
+        baseDir: BaseDirectory.AppData,
+      });
+    }
+    await writeTextFile("default/main.typ", "= Start", {
+      baseDir: BaseDirectory.AppData,
+    });
+    const entries = await readDir("default", {
+      baseDir: BaseDirectory.AppData,
+    });
+    let tree = new ProjectTree("default", true);
+    await processEntriesRecursive(tree, entries);
+    setProjectDirTree([tree]);
   };
 
-  const readDirAsync = async () => {
-    const dir = await desktopDir();
-    console.log(dir);
-  };
-  readDirAsync();
-
-  const treeData = [
-    {
-      label: "Asia",
-      value: "Asia",
-      key: "0",
-      children: [
-        {
-          label: "China",
-          value: "China",
-          key: "0-0",
-          children: [
-            {
-              label: "Beijing",
-              value: "Beijing",
-              key: "0-0-0",
-            },
-            {
-              label: "Shanghai",
-              value: "Shanghai",
-              key: "0-0-1",
-            },
-          ],
-        },
-        {
-          label: "Japan",
-          value: "Japan",
-          key: "0-1",
-          children: [
-            {
-              label: "Osaka",
-              value: "Osaka",
-              key: "0-1-0",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      label: "North America",
-      value: "North America",
-      key: "1",
-      children: [
-        {
-          label: "United States",
-          value: "United States",
-          key: "1-0",
-        },
-        {
-          label: "Canada",
-          value: "Canada",
-          key: "1-1",
-        },
-      ],
-    },
-  ];
   return (
     <NextUIProvider navigate={navigate}>
       <div className="flex h-screen">
         {show_slide_bar && (
           <div className="w-64 h-full pt-14 px-4 flex flex-col gap-4">
-            <Tree treeData={treeData} directory />
+            <Tree
+              treeData={projectDirTree}
+              // @ts-ignore
+              onDoubleClick={(_e, node: ProjectTree) => {
+                if (node.isDirectory) {
+                  return;
+                }
+                // @ts-ignore
+                setCurrentFile(node.absolutePath);
+              }}
+            />
           </div>
         )}
 
@@ -148,7 +158,7 @@ export default function App() {
               </Tab>
               <Tab key="music" title="Favorites"></Tab>
             </Tabs> */}
-            <EditorSpace {...tempProject} />
+            <EditorSpace file={currentFile} />
           </main>
           <Button
             className="bg-transparent hover:bg-gray-100 absolute left-4 top-2"
