@@ -4,6 +4,12 @@ import { TypstDocumentSemanticTokensProvider } from "../language";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { BaseDirectory, readTextFile } from "@tauri-apps/plugin-fs";
 
+loader.config({
+  paths: {
+    vs: "node_modules/monaco-editor/min/vs",
+  },
+});
+
 type EditorProps = {
   file: string;
 };
@@ -137,14 +143,6 @@ export default function EditorSpace({ file }: EditorProps) {
       changeModel();
     }
   }, [file]);
-
-  useEffect(() => {
-    loader.config({
-      paths: {
-        vs: "node_modules/monaco-editor/min/vs",
-      },
-    });
-  }, []);
 
   return (
     <Editor
