@@ -2722,9 +2722,9 @@ dependencies = [
 
 [[package]]
 name = "muda"
-version = "0.11.5"
+version = "0.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c47e7625990fc1af2226ea4f34fb2412b03c12639fcb91868581eb3a6893453"
+checksum = "a40c16e25abca53b401d2972e8ad344820e318cf7e00ea8a951a5ca265590295"
 dependencies = [
  "cocoa",
  "crossbeam-channel",
@@ -3599,8 +3599,9 @@ dependencies = [
 
 [[package]]
 name = "reflexo"
-version = "0.4.2-rc8"
-source = "git+https://github.com/Myriad-Dreamin/typst.ts.git#2ba02c5ff3e2ab735849d4e96b331bec14c24a00"
+version = "0.4.2-rc9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3bf3d6c80be65ec408823031e560758c1de427601d61a82fdea0d0ecb7794f4"
 dependencies = [
  "base64 0.22.0",
  "bitvec",
@@ -4616,9 +4617,9 @@ checksum = "e1fc403891a21bcfb7c37834ba66a547a8f402146eba7265b5a6d88059c9ff2f"
 
 [[package]]
 name = "tauri"
-version = "2.0.0-beta.11"
+version = "2.0.0-beta.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4c18889ceb808488d2a3b2707efaaf8b4d0ecb04a4014b2eaad97030d51b4e8"
+checksum = "3b119a486a9075ae20bfb8ed9a1883aff862c61a9c1cb1ef1336620536f032cc"
 dependencies = [
  "anyhow",
  "bytes",
@@ -4664,9 +4665,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-build"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4671dc132fefbcd7d17c4019679abc190717216818dee608a4990418ad66f335"
+checksum = "1e851a54f222a49babb6b8b94869307e0bf95be086ed92983c42a56d5ed92132"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -4686,9 +4687,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-codegen"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "027be730d88694e46ccc4e3a17e17d53e697c1ef27b609d6f0df400b54e6766f"
+checksum = "3ff9b1089989eecc839680cb6b52f6e7ee4733d09fa31861fc4a855996006fe5"
 dependencies = [
  "base64 0.22.0",
  "brotli",
@@ -4713,9 +4714,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-macros"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd7b6bbc2a8a739dc3fd351d864e9f42d83833afbd938f3a2c2d84f6d945dfcc"
+checksum = "a4b56c7b752b2b70b74299ff5421795e0e287b6748dd7ec8d44ae8e1637216a7"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -4727,9 +4728,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34f9dbdf508f32a6a7581a2757d2eb2187d8acd03984c7561e007824495da979"
+checksum = "233d4ed7ba51ff398831204ed6c8971b9565c91077e3fdef4711fe7b7715b23a"
 dependencies = [
  "anyhow",
  "glob",
@@ -4744,9 +4745,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d5d71f69535111078131380bcf2a4c2f190ef4d045a33d787a606e7d4fc6a786"
+checksum = "31961707e3be23c95f5fe39cb7688217e3c571a9a88aa9a03149b56bffd8036c"
 dependencies = [
  "anyhow",
  "glob",
@@ -4783,9 +4784,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52dd438ad0324372d2260e2b440f1df95a77c396dce0c0086383e7ab24d7cc6e"
+checksum = "34ddcf3c08632714e854e38105b39260ec239edd05a77ffcf5f4b3a51f97b119"
 dependencies = [
  "gtk",
  "http",
@@ -4801,9 +4802,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-runtime-wry"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72b38a6017dd8d457270785e740756280fa0139607b428e92e8d7f1f0799d1ca"
+checksum = "e2694f090a001c55536bbafb45f813229f06e461b3878a5c8280a98e52abb501"
 dependencies = [
  "cocoa",
  "gtk",
@@ -4825,9 +4826,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-utils"
-version = "2.0.0-beta.9"
+version = "2.0.0-beta.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ec939fd261ec3848b30027a236c0c5a9039d48fa729b4873bdc353a1f4afff1"
+checksum = "ef6a9ec42c3429fac6d46f4af147c765963a6fca18062dd73833032d812231af"
 dependencies = [
  "brotli",
  "cargo_metadata",
@@ -5223,9 +5224,9 @@ dependencies = [
 
 [[package]]
 name = "tray-icon"
-version = "0.11.3"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a4d9ddd4a7c0f3b6862af1c4911b529a49db4ee89310d3a258859c2f5053fdd"
+checksum = "454035ff34b8430638c894e6197748578d6b4d449c6edaf8ea854d94e2dd862b"
 dependencies = [
  "cocoa",
  "core-graphics",
@@ -5287,8 +5288,9 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
 name = "typst"
-version = "0.10.0"
-source = "git+https://github.com/Myriad-Dreamin/typst.git?branch=typst.ts-v0.11.0-2-content-hint#e5a81af2fac79a6f08492fe30978544b44c24a11"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82ce6533a33d2cc4b5eba6b009b862e75c8f9146a584f84ca154c94463e43993"
 dependencies = [
  "az",
  "bitflags 2.4.2",
@@ -5336,7 +5338,7 @@ dependencies = [
  "typed-arena",
  "typst-assets",
  "typst-macros",
- "typst-syntax",
+ "typst-syntax 0.11.0",
  "typst-timing",
  "unicode-bidi",
  "unicode-math-class",
@@ -5348,13 +5350,15 @@ dependencies = [
 
 [[package]]
 name = "typst-assets"
-version = "0.10.0"
-source = "git+https://github.com/typst/typst-assets?rev=4d1211a#4d1211ab5ba8a02992a7362000e6dd422d44dd68"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f13f85360328da54847dd7fefaf272dfa5b6d1fdeb53f32938924c39bf5b2c6c"
 
 [[package]]
 name = "typst-macros"
-version = "0.10.0"
-source = "git+https://github.com/Myriad-Dreamin/typst.git?branch=typst.ts-v0.11.0-2-content-hint#e5a81af2fac79a6f08492fe30978544b44c24a11"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54e48fdd6dabf48a0e595960aaef6ae43dac7d243e8c1c6926a0787d5b8a9ba7"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -5379,20 +5383,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "typst-syntax"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "367d86bf18f0363146bea1ea76fad19b54458695fdfad5e74ead3ede574b75fe"
+dependencies = [
+ "comemo",
+ "ecow",
+ "once_cell",
+ "serde",
+ "unicode-ident",
+ "unicode-math-class",
+ "unicode-script",
+ "unicode-segmentation",
+ "unscanny",
+]
+
+[[package]]
 name = "typst-timing"
-version = "0.10.0"
-source = "git+https://github.com/Myriad-Dreamin/typst.git?branch=typst.ts-v0.11.0-2-content-hint#e5a81af2fac79a6f08492fe30978544b44c24a11"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b2629933cde6f299c43627b90c83bb006cb906c56cc5dec7324f0a5017d5fd8"
 dependencies = [
  "parking_lot",
  "serde",
  "serde_json",
- "typst-syntax",
+ "typst-syntax 0.11.0",
 ]
 
 [[package]]
 name = "typst-ts-compiler"
-version = "0.4.2-rc8"
-source = "git+https://github.com/Myriad-Dreamin/typst.ts.git#2ba02c5ff3e2ab735849d4e96b331bec14c24a00"
+version = "0.4.2-rc9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "478dbcd334466a939420fa9e9429e0ecaa8ec8c5a943e74862b2b46b364e2938"
 dependencies = [
  "append-only-vec",
  "base64 0.22.0",
@@ -5429,8 +5452,9 @@ dependencies = [
 
 [[package]]
 name = "typst-ts-core"
-version = "0.4.2-rc8"
-source = "git+https://github.com/Myriad-Dreamin/typst.ts.git#2ba02c5ff3e2ab735849d4e96b331bec14c24a00"
+version = "0.4.2-rc9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2d109fb49a9ffa1d9f7126b317313d29257ec0d34ae7a34c65d16ed1fea2b448"
 dependencies = [
  "base64 0.22.0",
  "base64-serde",
@@ -5466,14 +5490,16 @@ dependencies = [
 
 [[package]]
 name = "typst-ts-svg-exporter"
-version = "0.4.2-rc8"
-source = "git+https://github.com/Myriad-Dreamin/typst.ts.git#2ba02c5ff3e2ab735849d4e96b331bec14c24a00"
+version = "0.4.2-rc9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f909564a69478f3e244ddc4380dc337f74edfa5d4ce7551ddfedc6f5d32f48b6"
 dependencies = [
  "base64 0.22.0",
  "comemo",
  "log",
  "once_cell",
  "rayon",
+ "reflexo",
  "siphasher 1.0.0",
  "tiny-skia",
  "typst",
@@ -5492,7 +5518,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-fs",
  "tauri-plugin-shell",
- "typst-syntax",
+ "typst-syntax 0.10.0",
  "typst-ts-compiler",
  "typst-ts-core",
 ]
@@ -6657,6 +6683,11 @@ dependencies = [
 ]
 
 [[patch.unused]]
+name = "typst"
+version = "0.10.0"
+source = "git+https://github.com/Myriad-Dreamin/typst.git?branch=typst.ts-v0.11.0-2-content-hint#e5a81af2fac79a6f08492fe30978544b44c24a11"
+
+[[patch.unused]]
 name = "typst-ide"
 version = "0.10.0"
 source = "git+https://github.com/Myriad-Dreamin/typst.git?branch=typst.ts-v0.11.0-2-content-hint#e5a81af2fac79a6f08492fe30978544b44c24a11"
@@ -6670,3 +6701,18 @@ source = "git+https://github.com/Myriad-Dreamin/typst.git?branch=typst.ts-v0.11.
 name = "typst-svg"
 version = "0.10.0"
 source = "git+https://github.com/Myriad-Dreamin/typst.git?branch=typst.ts-v0.11.0-2-content-hint#e5a81af2fac79a6f08492fe30978544b44c24a11"
+
+[[patch.unused]]
+name = "typst-ts-compiler"
+version = "0.4.2-rc8"
+source = "git+https://github.com/Myriad-Dreamin/typst.ts.git#2ba02c5ff3e2ab735849d4e96b331bec14c24a00"
+
+[[patch.unused]]
+name = "typst-ts-core"
+version = "0.4.2-rc8"
+source = "git+https://github.com/Myriad-Dreamin/typst.ts.git#2ba02c5ff3e2ab735849d4e96b331bec14c24a00"
+
+[[patch.unused]]
+name = "typst-ts-svg-exporter"
+version = "0.4.2-rc8"
+source = "git+https://github.com/Myriad-Dreamin/typst.ts.git#2ba02c5ff3e2ab735849d4e96b331bec14c24a00"
