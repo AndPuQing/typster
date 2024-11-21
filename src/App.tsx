@@ -1,172 +1,121 @@
 import {
   Button,
-  User,
   Listbox,
   ListboxItem,
-  ListboxSection,
   NextUIProvider,
+  Tab,
+  Tabs,
 } from "@nextui-org/react";
-import { ReactNode, useEffect, useState } from "react";
-import {
-  IconSidebar,
-  IconServer,
-  IconGlobe,
-  IconFile,
-  IconSetting,
-  IconFolder,
-} from "@douyinfe/semi-icons";
+
 import { Divider } from "@nextui-org/react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import EditorSpace from "./components/Editor";
-import { Tree } from "@douyinfe/semi-ui";
-import { TreeNodeData } from "@douyinfe/semi-ui/lib/es/tree";
-import { appDataDir } from "@tauri-apps/api/path";
-import {
-  BaseDirectory,
-  writeFile,
-  writeTextFile,
-  exists,
-  create,
-  mkdir,
-  readDir,
-} from "@tauri-apps/plugin-fs";
+import { load } from "@tauri-apps/plugin-store";
+import FileTree from "./components/FileTree";
+import { BaseDirectory, mkdir } from "@tauri-apps/plugin-fs";
 
-enum WorkspaceType {
-  LOCAL = "Local",
-  REMOTE = "Remote",
-}
+import { PanelRightClose, PanelRightOpen, Plus, X } from "lucide-react";
 
-interface Workspace {
-  name: string;
-  type: WorkspaceType;
-}
-
-function WorkspaceItem({ workspace }: { workspace: Workspace }) {
-  return (
-    <div className="flex items-center gap-2">
-      {workspace.type === WorkspaceType.LOCAL ? <IconServer /> : <IconGlobe />}
-      <span>{workspace.name}</span>
-    </div>
-  );
-}
-
-class ProjectTree implements TreeNodeData {
-  label: string;
-  key?: string | undefined;
-  children?: ProjectTree[];
-  icon?: ReactNode;
-  isDirectory?: boolean;
-  absolutePath?: string;
-  constructor(label: string, isDirectory = false, absolutePath?: string) {
-    this.label = label;
-    this.key = label;
-    this.icon = isDirectory ? <IconFolder /> : <IconFile />;
-    this.isDirectory = isDirectory;
-    this.absolutePath = absolutePath;
-  }
+interface TabList {
+  filename: string;
 }
 
 export default function App() {
-  // slide bar
-  const [show_slide_bar, setShowSlideBar] = useState(true);
-  const [projectDirTree, setProjectDirTree] = useState<TreeNodeData[]>();
-  const [currentFile, setCurrentFile] = useState<string | null>(null);
-
   const navigate = useNavigate();
+  const [workspace, setWorkspace] = useState<string | null>(null);
+  const [tabList, setTabList] = useState<TabList[]>([]);
 
   useEffect(() => {
-    createDefaultProject();
-  }, []);
-
-  async function processEntriesRecursive(parent: any, entries: any) {
-    for (const entry of entries) {
-      if (entry.isDirectory) {
-        const child = new ProjectTree(entry.name, true);
-        parent.children = parent.children || [];
-        parent.children.push(child);
-        processEntriesRecursive(
-          child,
-          await readDir(parent.label + "/" + entry.name, {
-            baseDir: BaseDirectory.AppData,
-          })
-        );
+    const fetchData = async () => {
+      const store = await load("store.json", { autoSave: true });
+      // const lastWorkspace = await store.get<string>("lastWorkspace");
+      const lastWorkspace = null;
+      if (!lastWorkspace) {
+        try {
+          await mkdir("defaultWorkspace", { baseDir: BaseDirectory.Desktop });
+        } catch (e) {
+          console.log(e);
+        }
+        await store.set("lastWorkspace", "defaultWorkspace");
+        setWorkspace("defaultWorkspace");
       } else {
-        const child = new ProjectTree(entry.name);
-        child.absolutePath = parent.label + "/" + entry.name;
-        parent.children = parent.children || [];
-        parent.children.push(child);
+        setWorkspace(lastWorkspace);
       }
-    }
-  }
-
-  const createDefaultProject = async () => {
-    const exist = await exists("default", { baseDir: BaseDirectory.AppData });
-    if (!exist) {
-      await mkdir("default", {
-        baseDir: BaseDirectory.AppData,
-      });
-    }
-    await writeTextFile("default/main.typ", "= Start", {
-      baseDir: BaseDirectory.AppData,
-    });
-    const entries = await readDir("default", {
-      baseDir: BaseDirectory.AppData,
-    });
-    let tree = new ProjectTree("default", true);
-    await processEntriesRecursive(tree, entries);
-    setProjectDirTree([tree]);
-  };
+    };
+    fetchData();
+  }, []);
 
   return (
     <NextUIProvider navigate={navigate}>
-      <div className="flex h-screen">
-        {show_slide_bar && (
-          <div className="w-64 h-full pt-14 px-4 flex flex-col gap-4">
-            <Tree
-              treeData={projectDirTree}
-              // @ts-ignore
-              onDoubleClick={(_e, node: ProjectTree) => {
-                if (node.isDirectory) {
-                  return;
-                }
-                // @ts-ignore
-                setCurrentFile(node.absolutePath);
-              }}
-            />
-          </div>
-        )}
-
-        <Divider orientation="vertical" />
-        {/* main content */}
-        <div className="w-full flex-1 flex-col">
-          <main className="h-full w-full overflow-visible pt-2 px-4 flex flex-col">
-            {/* <Tabs
-              aria-label="Options"
-              selectedKey={selected}
-              className="self-center"
-              onSelectionChange={setSelected}
-            >
-              <Tab key="photos" title="Project">
-                <Card>
-                  <CardBody>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                    do eiusmod tempor incididunt ut labore et dolore magna
-                    aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                    ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                  </CardBody>
-                </Card>
-              </Tab>
-              <Tab key="music" title="Favorites"></Tab>
-            </Tabs> */}
-            <EditorSpace file={currentFile} />
-          </main>
-          <Button
-            className="bg-transparent hover:bg-gray-100 absolute left-4 top-2"
-            onClick={() => setShowSlideBar(!show_slide_bar)}
-            isIconOnly
-          >
-            <IconSidebar />
+      <div className="grid grid-rows-[auto_1fr] h-screen">
+        <div className="flex bg-gray-50 border-b justify-start">
+          <Button isIconOnly className="bg-gray-50">
+            <PanelRightClose />
           </Button>
+          <Listbox
+            items={tabList}
+            aria-label="Dynamic Actions"
+            onAction={(key) => alert(key)}
+          >
+            {(item) => (
+              <ListboxItem key={item.filename} color={"default"}>
+                {item.filename}
+              </ListboxItem>
+            )}
+          </Listbox>
+
+          {/* <Tabs variant="light" color="primary">
+            {tabList.map((tab, index) => (
+              <Tab
+                key={index}
+                title={
+                  <div className="flex items-center space-x-2">
+                    <span>{tab.filename}</span>
+                    <Button
+                      isIconOnly
+                      color="primary"
+                      size="sm"
+                      onClick={() => {
+                        console.log(tabList);
+                        setTabList(tabList.filter((_, i) => i !== index));
+                      }}
+                    >
+                      <X />
+                    </Button>
+                  </div>
+                }
+                className="text-sm"
+              />
+            ))}
+          </Tabs> */}
+          <Button
+            isIconOnly
+            className="bg-gray-50"
+            onClick={() => {
+              setTabList([...tabList, { filename: "New File" }]);
+            }}
+          >
+            <Plus />
+          </Button>
+        </div>
+        <div className="grid grid-cols-[1fr_auto_3fr]">
+          <div className="bg-gray-50 p-4 border-r overflow-y-auto">
+            <FileTree workspace={workspace} />
+          </div>
+
+          <Divider orientation="vertical" />
+
+          {/* 右侧内容区域 */}
+          <div className="p-4 overflow-y-auto">
+            {/* <Container>
+              <h1 className="text-2xl font-bold">
+                Welcome to the Knowledge Base
+              </h1>
+              <p className="text-gray-600">
+                Select a file from the left to start editing.
+              </p>
+            </Container> */}
+          </div>
         </div>
       </div>
     </NextUIProvider>
