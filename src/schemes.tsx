@@ -1,3 +1,5 @@
-export interface Store {
-  lastWorkspace: string;
+export interface User {
+  name: string;
+  email: string;
+  avatar: string;
 }
