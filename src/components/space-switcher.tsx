@@ -17,6 +17,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Space } from "@/schemes";
+import { useAtom } from "jotai/react";
+import { lastOpenSpaceAtom } from "@/store";
 
 interface SpaceSwitcherProps {
   spaces: Space[];
@@ -24,7 +26,9 @@ interface SpaceSwitcherProps {
 
 export function SpaceSwitcher({ spaces }: SpaceSwitcherProps) {
   const { isMobile } = useSidebar();
-  const [activeTeam, setActiveTeam] = React.useState(spaces[0]);
+
+  const [lastActiveSpace, setLastActiveSpace] = useAtom(lastOpenSpaceAtom);
+  const [activeTeam, setActiveTeam] = React.useState(spaces[lastActiveSpace]);
 
   return (
     <SidebarMenu>
@@ -58,7 +62,10 @@ export function SpaceSwitcher({ spaces }: SpaceSwitcherProps) {
             {spaces.map((space, index) => (
               <DropdownMenuItem
                 key={space.name}
-                onClick={() => setActiveTeam(space)}
+                onClick={() => {
+                  setActiveTeam(space);
+                  setLastActiveSpace(index);
+                }}
                 className="gap-2 p-2"
               >
                 <div className="flex size-6 items-center justify-center rounded-sm border">

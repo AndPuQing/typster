@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   BookOpen,
   Bot,
+  ChevronRight,
   Frame,
   Map,
   PieChart,
@@ -9,7 +10,6 @@ import {
   SquareTerminal,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
 import { SpaceSwitcher } from "@/components/space-switcher";
@@ -18,115 +18,160 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { spacesAtom, userAtom } from "@/store";
 import { useAtomValue } from "jotai/react";
+import { SearchForm } from "./search-form";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 
 const data = {
   navMain: [
     {
-      title: "Playground",
+      title: "Getting Started",
       url: "#",
-      icon: SquareTerminal,
-      isActive: true,
       items: [
         {
-          title: "History",
+          title: "Installation",
           url: "#",
         },
         {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
+          title: "Project Structure",
           url: "#",
         },
       ],
     },
     {
-      title: "Models",
+      title: "Building Your Application",
       url: "#",
-      icon: Bot,
       items: [
         {
-          title: "Genesis",
+          title: "Routing",
           url: "#",
         },
         {
-          title: "Explorer",
+          title: "Data Fetching",
+          url: "#",
+          isActive: true,
+        },
+        {
+          title: "Rendering",
           url: "#",
         },
         {
-          title: "Quantum",
+          title: "Caching",
+          url: "#",
+        },
+        {
+          title: "Styling",
+          url: "#",
+        },
+        {
+          title: "Optimizing",
+          url: "#",
+        },
+        {
+          title: "Configuring",
+          url: "#",
+        },
+        {
+          title: "Testing",
+          url: "#",
+        },
+        {
+          title: "Authentication",
+          url: "#",
+        },
+        {
+          title: "Deploying",
+          url: "#",
+        },
+        {
+          title: "Upgrading",
+          url: "#",
+        },
+        {
+          title: "Examples",
           url: "#",
         },
       ],
     },
     {
-      title: "Documentation",
+      title: "API Reference",
       url: "#",
-      icon: BookOpen,
       items: [
         {
-          title: "Introduction",
+          title: "Components",
           url: "#",
         },
         {
-          title: "Get Started",
+          title: "File Conventions",
           url: "#",
         },
         {
-          title: "Tutorials",
+          title: "Functions",
           url: "#",
         },
         {
-          title: "Changelog",
+          title: "next.config.js Options",
+          url: "#",
+        },
+        {
+          title: "CLI",
+          url: "#",
+        },
+        {
+          title: "Edge Runtime",
           url: "#",
         },
       ],
     },
     {
-      title: "Settings",
+      title: "Architecture",
       url: "#",
-      icon: Settings2,
       items: [
         {
-          title: "General",
+          title: "Accessibility",
           url: "#",
         },
         {
-          title: "Team",
+          title: "Fast Refresh",
           url: "#",
         },
         {
-          title: "Billing",
+          title: "Next.js Compiler",
           url: "#",
         },
         {
-          title: "Limits",
+          title: "Supported Browsers",
+          url: "#",
+        },
+        {
+          title: "Turbopack",
           url: "#",
         },
       ],
     },
-  ],
-  projects: [
     {
-      name: "Design Engineering",
+      title: "Community",
       url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      items: [
+        {
+          title: "Contribution Guide",
+          url: "#",
+        },
+      ],
     },
   ],
 };
@@ -140,9 +185,41 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SpaceSwitcher spaces={spaces} />
       </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+      <SearchForm />
+      <SidebarContent className="gap-1 mt-2">
+        {data.navMain.map((item) => (
+          <Collapsible
+            key={item.title}
+            title={item.title}
+            defaultOpen
+            className="group/collapsible"
+          >
+            <SidebarGroup className="p-0 pl-2 pr-2">
+              <SidebarGroupLabel
+                asChild
+                className="group/label text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              >
+                <CollapsibleTrigger>
+                  {item.title}{" "}
+                  <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {item.items.map((item) => (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton asChild isActive={item.isActive}>
+                          <a href={item.url}>{item.title}</a>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
+        ))}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

@@ -37,6 +37,13 @@ export const userAtom = atomWithStorage<User>(
   { getOnInit: true }
 );
 
+export const lastOpenSpaceAtom = atomWithStorage<number>(
+  "lastOpenSpace",
+  0,
+  store,
+  { getOnInit: true }
+);
+
 export const spacesAtom = atomWithStorage<Space[]>(
   "spaces",
   [
