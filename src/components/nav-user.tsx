@@ -23,18 +23,14 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { userAtom } from "@/store";
-import { useAtomValue } from "jotai";
+import { User } from "@/schemes";
 
-export function NavUser() {
+interface NavUserProps {
+  user: User;
+}
+
+export function NavUser({ user }: NavUserProps) {
   const { isMobile } = useSidebar();
-  const user = useAtomValue(userAtom) as {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-
-  console.log(user);
 
   return (
     <SidebarMenu>

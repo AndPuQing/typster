@@ -1,6 +1,7 @@
 import { atomWithStorage } from "jotai/utils";
 import { AsyncStorage } from "jotai/vanilla/utils/atomWithStorage";
 import { Store } from "@tauri-apps/plugin-store";
+import { Space, User } from "@/schemes";
 
 class MyStore implements AsyncStorage<any> {
   public store!: Store;
@@ -9,9 +10,10 @@ class MyStore implements AsyncStorage<any> {
     this.store = await Store.load("app.bin");
   }
 
-  public async getItem(key: string, initialValue: any) {
+  public async getItem(key: string, initialValue: any): Promise<any> {
     if (!(await this.store.has(key))) {
-      return this.store.set(key, initialValue);
+      await this.store.set(key, initialValue);
+      return initialValue;
     } else return this.store.get(key);
   }
 
@@ -28,9 +30,29 @@ class MyStore implements AsyncStorage<any> {
 export const store = new MyStore();
 await store.init();
 
-export const userAtom = atomWithStorage(
+export const userAtom = atomWithStorage<User>(
   "user",
-  { name: "Guest", email: "me", avatar: "/avatars/shadcn.jpg" },
+  { name: "Guest", email: "example@mail.com", avatar: "/avatars/shadcn.jpg" },
   store,
-  { getOnInit: false }
+  { getOnInit: true }
+);
+
+export const spacesAtom = atomWithStorage<Space[]>(
+  "spaces",
+  [
+    {
+      name: "Personal",
+      icon: "🏠",
+    },
+    {
+      name: "Work",
+      icon: "💼",
+    },
+    {
+      name: "Projects",
+      icon: "",
+    },
+  ],
+  store,
+  { getOnInit: true }
 );
