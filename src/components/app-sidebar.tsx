@@ -4,7 +4,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { SpaceSwitcher } from "./space-switcher";
+import { SpaceSwitcher } from "@/components/space-switcher";
 import { useAtomValue } from "jotai/react";
 import { spacesAtom } from "@/store";
 import {
@@ -18,10 +18,11 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
-import { NavFavorites } from "./nav-favorites";
-import { NavSecondary } from "./nav-secondary";
-import { NavWorkspaces } from "./nav-workspaces";
-// This is sample data.
+import { NavFavorites } from "@/components/nav-favorites";
+import { NavSecondary } from "@/components/nav-secondary";
+import { NavWorkspaces } from "@/components/nav-workspaces";
+import { NavMain } from "@/components/nav-main";
+
 const data = {
   navMain: [
     {
@@ -241,7 +242,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
         <SpaceSwitcher spaces={spaces} />
-        {/* <NavMain items={data.navMain} /> */}
+        <NavMain items={data.navMain} />
       </SidebarHeader>
       <SidebarContent>
         <NavFavorites favorites={data.favorites} />
