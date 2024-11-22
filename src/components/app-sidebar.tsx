@@ -1,229 +1,253 @@
-import * as React from "react";
-import {
-  BookOpen,
-  Bot,
-  ChevronRight,
-  Frame,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react";
-
-import { NavProjects } from "@/components/nav-projects";
-import { NavUser } from "@/components/nav-user";
-import { SpaceSwitcher } from "@/components/space-switcher";
-
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { spacesAtom, userAtom } from "@/store";
+import { SpaceSwitcher } from "./space-switcher";
 import { useAtomValue } from "jotai/react";
-import { SearchForm } from "./search-form";
+import { spacesAtom } from "@/store";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "./ui/collapsible";
-
+  Blocks,
+  Calendar,
+  Home,
+  Inbox,
+  MessageCircleQuestion,
+  Search,
+  Settings2,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+import { NavFavorites } from "./nav-favorites";
+import { NavSecondary } from "./nav-secondary";
+import { NavWorkspaces } from "./nav-workspaces";
+// This is sample data.
 const data = {
   navMain: [
     {
-      title: "Getting Started",
+      title: "Search",
       url: "#",
-      items: [
+      icon: Search,
+    },
+    {
+      title: "Ask AI",
+      url: "#",
+      icon: Sparkles,
+    },
+    {
+      title: "Home",
+      url: "#",
+      icon: Home,
+      isActive: true,
+    },
+    {
+      title: "Inbox",
+      url: "#",
+      icon: Inbox,
+      badge: "10",
+    },
+  ],
+  navSecondary: [
+    {
+      title: "Calendar",
+      url: "#",
+      icon: Calendar,
+    },
+    {
+      title: "Settings",
+      url: "#",
+      icon: Settings2,
+    },
+    {
+      title: "Templates",
+      url: "#",
+      icon: Blocks,
+    },
+    {
+      title: "Trash",
+      url: "#",
+      icon: Trash2,
+    },
+    {
+      title: "Help",
+      url: "#",
+      icon: MessageCircleQuestion,
+    },
+  ],
+  favorites: [
+    {
+      name: "Project Management & Task Tracking",
+      url: "#",
+      emoji: "📊",
+    },
+    {
+      name: "Family Recipe Collection & Meal Planning",
+      url: "#",
+      emoji: "🍳",
+    },
+    {
+      name: "Fitness Tracker & Workout Routines",
+      url: "#",
+      emoji: "💪",
+    },
+    {
+      name: "Book Notes & Reading List",
+      url: "#",
+      emoji: "📚",
+    },
+    {
+      name: "Sustainable Gardening Tips & Plant Care",
+      url: "#",
+      emoji: "🌱",
+    },
+    {
+      name: "Language Learning Progress & Resources",
+      url: "#",
+      emoji: "🗣️",
+    },
+    {
+      name: "Home Renovation Ideas & Budget Tracker",
+      url: "#",
+      emoji: "🏠",
+    },
+    {
+      name: "Personal Finance & Investment Portfolio",
+      url: "#",
+      emoji: "💰",
+    },
+    {
+      name: "Movie & TV Show Watchlist with Reviews",
+      url: "#",
+      emoji: "🎬",
+    },
+    {
+      name: "Daily Habit Tracker & Goal Setting",
+      url: "#",
+      emoji: "✅",
+    },
+  ],
+  workspaces: [
+    {
+      name: "Personal Life Management",
+      emoji: "🏠",
+      pages: [
         {
-          title: "Installation",
+          name: "Daily Journal & Reflection",
           url: "#",
+          emoji: "📔",
         },
         {
-          title: "Project Structure",
+          name: "Health & Wellness Tracker",
           url: "#",
+          emoji: "🍏",
+        },
+        {
+          name: "Personal Growth & Learning Goals",
+          url: "#",
+          emoji: "🌟",
         },
       ],
     },
     {
-      title: "Building Your Application",
-      url: "#",
-      items: [
+      name: "Professional Development",
+      emoji: "💼",
+      pages: [
         {
-          title: "Routing",
+          name: "Career Objectives & Milestones",
           url: "#",
+          emoji: "🎯",
         },
         {
-          title: "Data Fetching",
+          name: "Skill Acquisition & Training Log",
           url: "#",
-          isActive: true,
+          emoji: "🧠",
         },
         {
-          title: "Rendering",
+          name: "Networking Contacts & Events",
           url: "#",
-        },
-        {
-          title: "Caching",
-          url: "#",
-        },
-        {
-          title: "Styling",
-          url: "#",
-        },
-        {
-          title: "Optimizing",
-          url: "#",
-        },
-        {
-          title: "Configuring",
-          url: "#",
-        },
-        {
-          title: "Testing",
-          url: "#",
-        },
-        {
-          title: "Authentication",
-          url: "#",
-        },
-        {
-          title: "Deploying",
-          url: "#",
-        },
-        {
-          title: "Upgrading",
-          url: "#",
-        },
-        {
-          title: "Examples",
-          url: "#",
+          emoji: "🤝",
         },
       ],
     },
     {
-      title: "API Reference",
-      url: "#",
-      items: [
+      name: "Creative Projects",
+      emoji: "🎨",
+      pages: [
         {
-          title: "Components",
+          name: "Writing Ideas & Story Outlines",
           url: "#",
+          emoji: "✍️",
         },
         {
-          title: "File Conventions",
+          name: "Art & Design Portfolio",
           url: "#",
+          emoji: "🖼️",
         },
         {
-          title: "Functions",
+          name: "Music Composition & Practice Log",
           url: "#",
-        },
-        {
-          title: "next.config.js Options",
-          url: "#",
-        },
-        {
-          title: "CLI",
-          url: "#",
-        },
-        {
-          title: "Edge Runtime",
-          url: "#",
+          emoji: "🎵",
         },
       ],
     },
     {
-      title: "Architecture",
-      url: "#",
-      items: [
+      name: "Home Management",
+      emoji: "🏡",
+      pages: [
         {
-          title: "Accessibility",
+          name: "Household Budget & Expense Tracking",
           url: "#",
+          emoji: "💰",
         },
         {
-          title: "Fast Refresh",
+          name: "Home Maintenance Schedule & Tasks",
           url: "#",
+          emoji: "🔧",
         },
         {
-          title: "Next.js Compiler",
+          name: "Family Calendar & Event Planning",
           url: "#",
-        },
-        {
-          title: "Supported Browsers",
-          url: "#",
-        },
-        {
-          title: "Turbopack",
-          url: "#",
+          emoji: "📅",
         },
       ],
     },
     {
-      title: "Community",
-      url: "#",
-      items: [
+      name: "Travel & Adventure",
+      emoji: "🧳",
+      pages: [
         {
-          title: "Contribution Guide",
+          name: "Trip Planning & Itineraries",
           url: "#",
+          emoji: "🗺️",
+        },
+        {
+          name: "Travel Bucket List & Inspiration",
+          url: "#",
+          emoji: "🌎",
+        },
+        {
+          name: "Travel Journal & Photo Gallery",
+          url: "#",
+          emoji: "📸",
         },
       ],
     },
   ],
 };
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const user = useAtomValue(userAtom);
   const spaces = useAtomValue(spacesAtom);
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
         <SpaceSwitcher spaces={spaces} />
+        {/* <NavMain items={data.navMain} /> */}
       </SidebarHeader>
-      <SearchForm />
-      <SidebarContent className="gap-1 mt-2">
-        {data.navMain.map((item) => (
-          <Collapsible
-            key={item.title}
-            title={item.title}
-            defaultOpen
-            className="group/collapsible"
-          >
-            <SidebarGroup className="p-0 pl-2 pr-2">
-              <SidebarGroupLabel
-                asChild
-                className="group/label text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              >
-                <CollapsibleTrigger>
-                  {item.title}{" "}
-                  <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                </CollapsibleTrigger>
-              </SidebarGroupLabel>
-              <CollapsibleContent>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {item.items.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild isActive={item.isActive}>
-                          <a href={item.url}>{item.title}</a>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible>
-        ))}
+      <SidebarContent>
+        <NavFavorites favorites={data.favorites} />
+        <NavWorkspaces workspaces={data.workspaces} />
+        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={user} />
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
