@@ -1,7 +1,7 @@
 import { atomWithStorage } from "jotai/utils";
 import { AsyncStorage } from "jotai/vanilla/utils/atomWithStorage";
 import { Store } from "@tauri-apps/plugin-store";
-import { Space, User } from "@/schemes";
+import { Space, User, Favorite } from "@/schemes";
 
 class MyStore implements AsyncStorage<any> {
   public store!: Store;
@@ -50,16 +50,16 @@ export const spacesAtom = atomWithStorage<Space[]>(
     {
       name: "Personal",
       icon: "🏠",
-    },
-    {
-      name: "Work",
-      icon: "💼",
-    },
-    {
-      name: "Projects",
-      icon: "",
+      url: "/",
     },
   ],
+  store,
+  { getOnInit: true }
+);
+
+export const favoritesAtom = atomWithStorage<Favorite[]>(
+  "favorites",
+  [],
   store,
   { getOnInit: true }
 );
