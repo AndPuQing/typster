@@ -14,13 +14,20 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { NavActions } from "@/components/nav-actions";
+import { Toaster } from "@/components/ui/sonner"
+import { useTheme } from "./components/theme-provider";
 
 export default function App() {
   const navigate = useNavigate();
 
+  const { theme } = useTheme()
+
   return (
     <NextUIProvider navigate={navigate}>
       <SidebarProvider>
+        <Toaster richColors theme={theme} closeButton toastOptions={{ classNames:{
+          toast: "shadow-lg rounded-lg flex items-center p-4 text-xs gap-1.5",
+        }}} />
         <AppSidebar />
         <SidebarInset>
           <header className="flex h-14 shrink-0 items-center gap-2">

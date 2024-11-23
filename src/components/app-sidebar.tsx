@@ -77,12 +77,11 @@ const data = {
   ],
 };
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const spaces = useAtomValue(spacesAtom);
 
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <SpaceSwitcher spaces={spaces} />
+        <SpaceSwitcher />
         <NavMain items={data.navMain} />
       </SidebarHeader>
       <SidebarContent>
