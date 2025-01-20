@@ -16,7 +16,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAtom, useAtomValue } from "jotai/react";
+import { useAtom } from "jotai/react";
 import { lastOpenSpaceAtom, spacesAtom } from "@/store";
 import { toast } from "sonner";
 import {
@@ -32,6 +32,14 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "./ui/input";
 import { useForm } from "react-hook-form"
 import { open } from "@tauri-apps/plugin-dialog";
+import { LogicalSize, Window } from "@tauri-apps/api/window"
+import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { invoke } from "@tauri-apps/api/core";
+import { useNavigate } from "react-router-dom";
+
+function openSpaceManager() {
+  invoke("create_window")
+}
 
 export function SpaceSwitcher() {
   const { isMobile } = useSidebar();
@@ -65,60 +73,57 @@ export function SpaceSwitcher() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <SidebarMenuButton
-                size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              >
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
-                  {activeTeam.icon}
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
-                    {activeTeam.name}
-                  </span>
-                </div>
-                <ChevronsUpDown className="ml-auto" />
-              </SidebarMenuButton>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-              align="start"
-              side={isMobile ? "bottom" : "right"}
-              sideOffset={4}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Workspaces
-              </DropdownMenuLabel>
-              {spaces.map((space, index) => (
-                <DropdownMenuItem
-                  key={space.name}
-                  onClick={() => {
-                    setActiveTeam(space);
-                    setLastActiveSpace(index);
-                  }}
-                  className="gap-2 p-2"
-                >
-                  <div className="flex size-6 items-center justify-center rounded-sm border">
-                    {/* {space.icon} */}
-                    {space.icon != "" ? space.icon : "😊"}
-                  </div>
-                  {space.name}
-                  <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DialogTrigger asChild>
-                <DropdownMenuItem className="gap-2 p-2">
-                  <Plus className="size-4" />
-                  <div className="font-medium text-muted-foreground">Add Space</div>
-                </DropdownMenuItem>
-              </DialogTrigger>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <DialogContent>
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
+                {activeTeam.icon}
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">
+                  {activeTeam.name}
+                </span>
+              </div>
+              <ChevronsUpDown className="ml-auto" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            align="start"
+            side={isMobile ? "bottom" : "right"}
+            sideOffset={4}
+          >
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Workspaces
+            </DropdownMenuLabel>
+            {spaces.map((space, index) => (
+              <DropdownMenuItem
+                key={space.name}
+                onClick={() => {
+                  setActiveTeam(space);
+                  setLastActiveSpace(index);
+                }}
+                className="gap-2 p-2"
+              >
+                <div className="flex size-6 items-center justify-center rounded-sm border">
+                  {/* {space.icon} */}
+                  {space.icon != "" ? space.icon : "😊"}
+                </div>
+                {space.name}
+                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="gap-2 p-2" onClick={() => openSpaceManager()}>
+              <Plus className="size-4" />
+              <div className="font-medium text-muted-foreground">Add Space</div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {/* <DialogContent>
             <DialogHeader>
               <DialogTitle>Create a local Workspace</DialogTitle>
             </DialogHeader>
@@ -182,8 +187,7 @@ export function SpaceSwitcher() {
                 </DialogFooter>
               </form>
             </Form>
-          </DialogContent>
-        </Dialog>
+          </DialogContent> */}
       </SidebarMenuItem>
     </SidebarMenu>
   );

@@ -1,4 +1,4 @@
-import { ChevronRight, FilePlus, FolderPlus, MoreHorizontal } from "lucide-react"
+import { ChevronRight, FilePlus, FolderPlus, Copy, Trash, Edit, MoreHorizontal, FileUp, FolderUp } from "lucide-react"
 
 import {
   Collapsible,
@@ -10,7 +10,6 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -18,58 +17,248 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 import { lastOpenSpaceAtom, spacesAtom } from "@/store";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAtomValue } from "jotai/react";
 import { WorkspaceEntry } from "@/schemes";
-import { readDir, DirEntry, mkdir, create } from "@tauri-apps/plugin-fs";
+import { readDir, DirEntry, mkdir, create, BaseDirectory, readTextFile, writeTextFile, exists, rename, remove } from "@tauri-apps/plugin-fs";
 import { Button } from "./ui/button";
 import { Tooltip } from "@nextui-org/react";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu"
 
 async function loadFolders(rootPath: string): Promise<WorkspaceEntry[]> {
-  const results: WorkspaceEntry[] = [];
-  const entries = await readDir(rootPath);
-  async function processEntriesRecursive(parent: string, entries: DirEntry[]): Promise<void> {
+  const entries = await readDir(rootPath, { baseDir: BaseDirectory.Desktop });
+
+  async function processEntriesRecursive(parent: string, entries: DirEntry[]): Promise<WorkspaceEntry[]> {
+    const items: WorkspaceEntry[] = [];
+
     for (const entry of entries) {
       if (entry.name.startsWith('.')) continue;
-      results.push({
-        name: entry.name,
-        isDirectory: entry.isDirectory,
-        isFile: entry.isFile,
-        path: `${parent}/${entry.name}`,
-        children: []
-      });
-    }
-    for (const entry of entries) {
+
+      const path = parent === '/'
+        ? `${parent}${entry.name}`
+        : `${parent}/${entry.name}`;
+
       if (entry.isDirectory) {
-        const path = `${parent}/${entry.name}`;
-        const subEntries = await readDir(path);
-        await processEntriesRecursive(path, subEntries);
+        try {
+          const subEntries = await readDir(path);
+          const children = await processEntriesRecursive(path, subEntries);
+          items.push({
+            name: entry.name,
+            isDirectory: true,
+            isFile: false,
+            path,
+            children
+          });
+        } catch (error) {
+          console.warn(`Failed to read directory ${path}:`, error);
+          items.push({
+            name: entry.name,
+            isDirectory: true,
+            isFile: false,
+            path,
+            children: []
+          });
+        }
+      } else {
+        items.push({
+          name: entry.name,
+          isDirectory: false,
+          isFile: true,
+          path,
+          children: []
+        });
       }
     }
+    return items;
   }
-  await processEntriesRecursive(rootPath, entries);
-  console.log(results);
-  return results;
+
+  return processEntriesRecursive(rootPath, entries);
+}
+
+
+interface FileItemProps {
+  file: WorkspaceEntry;
+  onRename: (path: string, isDirectory: boolean) => void;
+  onDuplicate: (path: string, isDirectory: boolean) => void;
+  onDelete: (path: string, isDirectory: boolean) => void;
+}
+
+function FileItem({ file, onRename, onDuplicate, onDelete }: FileItemProps) {
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <SidebarMenuItem>
+          <SidebarMenuButton asChild className="pl-8">
+            <a href={file.path}>
+              <span>{file.name}</span>
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem onSelect={() => onRename(file.path, false)}>
+          <Edit className="mr-2 h-4 w-4" />
+          重命名
+        </ContextMenuItem>
+        <ContextMenuItem onSelect={() => onDuplicate(file.path, false)}>
+          <Copy className="mr-2 h-4 w-4" />
+          复制
+        </ContextMenuItem>
+        <ContextMenuItem
+          className="text-red-600"
+          onSelect={() => onDelete(file.path, false)}
+        >
+          <Trash className="mr-2 h-4 w-4" />
+          删除
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  )
+}
+
+interface FolderTreeProps {
+  items: WorkspaceEntry[];
+  onRename: (path: string, isDirectory: boolean) => void;
+  onDuplicate: (path: string, isDirectory: boolean) => void;
+  onDelete: (path: string, isDirectory: boolean) => void;
+}
+
+function FolderTree({ items, onRename, onDuplicate, onDelete }: FolderTreeProps) {
+  return (
+    <>
+      {items.map((item) => (
+        !item.isDirectory ? (
+          <FileItem key={item.path} file={item} onRename={onRename} onDuplicate={onDuplicate} onDelete={onDelete} />
+        ) : (
+          <ContextMenu key={item.path}>
+            <ContextMenuTrigger>
+              <SidebarMenuItem>
+                <Collapsible className="group/collapsible">
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuSubButton>
+                      <ChevronRight size={16} className="transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                      <span>{item.name}</span>
+                    </SidebarMenuSubButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <FolderTree items={item.children ?? []} onRename={onRename} onDuplicate={onDuplicate} onDelete={onDelete} />
+                      </SidebarMenuSubItem>
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </Collapsible>
+              </SidebarMenuItem>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem onSelect={() => onRename(item.path, true)}>
+                <Edit className="mr-2 h-4 w-4" />
+                重命名
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={() => onDuplicate(item.path, true)}>
+                <Copy className="mr-2 h-4 w-4" />
+                复制
+              </ContextMenuItem>
+              <ContextMenuItem
+                className="text-red-600"
+                onSelect={() => onDelete(item.path, true)}
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                删除
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
+        )
+      ))}
+    </>
+  )
 }
 
 export function NavFolders() {
   const lastActiveSpace = useAtomValue(lastOpenSpaceAtom);
   const spaces = useAtomValue(spacesAtom);
-  const queryClient = useQueryClient();
+  const [folders, setFolders] = useState<WorkspaceEntry[]>([]);
 
-  const { data: folders = [] } = useQuery({
-    queryKey: ['folders', spaces[lastActiveSpace].name],
-    queryFn: () => loadFolders(spaces[lastActiveSpace].url)
-  });
+  useEffect(() => {
+    const loadFolderData = async () => {
+      try {
+        const data = await loadFolders(spaces[lastActiveSpace].url);
+        setFolders(data);
+      } catch (error) {
+        toast.error(`Failed to load folders: ${error}`);
+      }
+    };
+    loadFolderData();
+  }, [spaces, lastActiveSpace]);
+
+  const handleRename = async (path: string, isDirectory: boolean) => {
+    try {
+      const oldPath = path;
+      const oldName = oldPath.split('/').pop();
+      const newName = prompt('Enter new name:', oldName);
+
+      if (!newName || newName === oldName) return;
+
+      const newPath = oldPath.replace(oldName!, newName);
+
+      if (await exists(newPath, { baseDir: BaseDirectory.Desktop })) {
+        toast.error('A file or folder with this name already exists');
+        return;
+      }
+      await rename(oldPath, newPath, { oldPathBaseDir: BaseDirectory.Desktop, newPathBaseDir: BaseDirectory.Desktop });
+      const updatedFolders = await loadFolders(spaces[lastActiveSpace].url);
+      setFolders(updatedFolders);
+      toast.success(`Renamed successfully`);
+    } catch (error) {
+      toast.error(`Failed to rename: ${error}`);
+    }
+  };
+
+  const handleDelete = async (path: string, isDirectory: boolean) => {
+    try {
+      if (confirm(`Are you sure you want to delete ${path}?`)) {
+        await remove(path, { recursive: true, baseDir: BaseDirectory.Desktop });
+        const updatedFolders = await loadFolders(spaces[lastActiveSpace].url);
+        setFolders(updatedFolders);
+      }
+    } catch (error) {
+      toast.error(`Failed to delete: ${error}`);
+    }
+  };
+
+  const handleDuplicate = async (path: string, isDirectory: boolean) => {
+    try {
+
+      const name = path.split('/').pop();
+      const newPath = `${path}_copy`;
+
+      if (isDirectory) {
+        await mkdir(newPath, {
+          recursive: true,
+          baseDir: BaseDirectory.Desktop
+        });
+      } else {
+        const content = await readTextFile(path, { baseDir: BaseDirectory.Desktop });
+        await create(newPath, { baseDir: BaseDirectory.Desktop });
+        await writeTextFile(newPath, content, { baseDir: BaseDirectory.Desktop });
+      }
+      const updatedFolders = await loadFolders(spaces[lastActiveSpace].url);
+      setFolders(updatedFolders);
+      toast.success(`Duplicated successfully`);
+    } catch (error) {
+      toast.error(`Failed to duplicate: ${error}`);
+    }
+  };
 
   const handleAddFile = async () => {
     try {
       const currentPath = spaces[lastActiveSpace].url;
       const fileName = `New File ${Date.now()}.typ`;
       const filePath = `${currentPath}/${fileName}`;
-      await create(filePath);
-      await queryClient.invalidateQueries({ queryKey: ['folders'] });
+      await create(filePath, { baseDir: BaseDirectory.Desktop });
+      const updatedFolders = await loadFolders(spaces[lastActiveSpace].url);
+      setFolders(updatedFolders);
       toast.success(`File "${fileName}" created at ${filePath}`);
     } catch (error) {
       toast.error(`Failed to create file: ${error}`);
@@ -84,7 +273,8 @@ export function NavFolders() {
       await mkdir(folderPath, {
         recursive: true
       });
-      await queryClient.invalidateQueries({ queryKey: ['folders'] });
+      const updatedFolders = await loadFolders(spaces[lastActiveSpace].url);
+      setFolders(updatedFolders);
       toast.success(`Folder "${folderName}" created at ${folderPath}`);
     } catch (error) {
       toast.error(`Failed to create folder: ${error}`);
@@ -106,50 +296,7 @@ export function NavFolders() {
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {folders.map((folder) => (
-            <Collapsible key={folder.name}>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <a href="#">
-                    {folder.isDirectory ? "📁" : "📄"}
-                    <span>{folder.name}</span>
-                  </a>
-                </SidebarMenuButton>
-                {folder.isDirectory && (
-                  <>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuAction
-                        className="left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90"
-                        showOnHover
-                      >
-                        <ChevronRight />
-                      </SidebarMenuAction>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {folder.children?.map((child) => (
-                          <SidebarMenuSubItem key={child.name}>
-                            <SidebarMenuSubButton asChild>
-                              <a href="#">
-                                {child.isDirectory ? "📁" : "📄"}
-                                <span>{child.name}</span>
-                              </a>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </>
-                )}
-              </SidebarMenuItem>
-            </Collapsible>
-          ))}
-          <SidebarMenuItem>
-            <SidebarMenuButton className="text-sidebar-foreground/70">
-              <MoreHorizontal />
-              <span>More</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          <FolderTree items={folders} onRename={handleRename} onDuplicate={handleDuplicate} onDelete={handleDelete} />
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

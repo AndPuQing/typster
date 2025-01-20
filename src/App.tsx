@@ -1,6 +1,6 @@
 import { BreadcrumbItem, NextUIProvider } from "@nextui-org/react";
 
-import { useNavigate } from "react-router-dom";
+import { Route, Routes, useHref, useNavigate } from "react-router-dom";
 import {
   SidebarInset,
   SidebarProvider,
@@ -15,19 +15,21 @@ import {
 } from "@/components/ui/breadcrumb";
 import { NavActions } from "@/components/nav-actions";
 import { Toaster } from "@/components/ui/sonner"
-import { useTheme } from "./components/theme-provider";
+import { ThemeProvider, useTheme } from "./components/theme-provider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-export default function App() {
-  const navigate = useNavigate();
-
+function Dashboard() {
   const { theme } = useTheme()
+  const queryClient = new QueryClient();
 
-  return (
-    <NextUIProvider navigate={navigate}>
+  return (<QueryClientProvider client={queryClient}>
+    <ThemeProvider>
       <SidebarProvider>
-        <Toaster richColors theme={theme} closeButton toastOptions={{ classNames:{
-          toast: "shadow-lg rounded-lg flex items-center p-4 text-xs gap-1.5",
-        }}} />
+        <Toaster richColors theme={theme} closeButton toastOptions={{
+          classNames: {
+            toast: "shadow-lg rounded-lg flex items-center p-4 text-xs gap-1.5",
+          }
+        }} />
         <AppSidebar />
         <SidebarInset>
           <header className="flex h-14 shrink-0 items-center gap-2">
@@ -54,6 +56,21 @@ export default function App() {
           </div>
         </SidebarInset>
       </SidebarProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
+  )
+}
+
+export default function App() {
+  const navigate = useNavigate();
+
+  return (
+    <NextUIProvider navigate={navigate}>
+      <div>asdf</div>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/spacemanager" element={<div className="w-2">Space Manager</div>} />
+      </Routes>
     </NextUIProvider>
   );
 }

@@ -29,6 +29,8 @@ class MyStore implements AsyncStorage<any> {
 
 export const store = new MyStore();
 await store.init();
+await store.store.clear();
+
 
 export const userAtom = atomWithStorage<User>(
   "user",
@@ -50,7 +52,7 @@ export const spacesAtom = atomWithStorage<Space[]>(
     {
       name: "Personal",
       icon: "🏠",
-      url: "#",
+      url: "defaultWorkspace",
     },
   ],
   store,

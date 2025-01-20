@@ -3,7 +3,8 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": [
-    "main"
+    "main",
+    "label"
   ],
   "permissions": [
     "core:path:default",
@@ -23,8 +24,16 @@
     "core:tray:default",
     "shell:allow-open",
     "fs:default",
+    "fs:read-all",
     "fs:write-all",
+    "fs:scope-desktop",
+    "fs:allow-desktop-write",
+    "fs:allow-create",
+    "fs:create-app-specific-dirs",
+    "fs:allow-desktop-write-recursive",
     "store:default",
-    "dialog:default"
+    "dialog:default",
+    "core:window:allow-create",
+    "core:webview:allow-create-webview-window"
   ]
 }
